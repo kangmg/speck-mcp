@@ -1,0 +1,14 @@
+node_modules/
+dist/
+viewer/dist/
+viewer/public/samples/
+viewer/public/vite.svg
+.tmp/
+.codegraph
+.omo/
+
+.DS_Store
+*.log
+.env
+.env.*
+!.env.example

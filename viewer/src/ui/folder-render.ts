@@ -1,0 +1,296 @@
+import type { Pane } from "tweakpane";
+import { addInput, addPercentInput } from "./inputs";
+import { State } from "../state";
+import type { Renderer } from "../render/renderer";
+import { Config } from "../config";
+
+export type Params = {
+  pane: Pane;
+  state: State;
+  renderer: Renderer;
+  onReset: () => void;
+};
+
+export function addRenderFolder({ pane, state, renderer, onReset }: Params) {
+  const renderFolder = pane.addFolder({ title: "Render" });
+
+  addInput(renderFolder, {
+    label: "Preset",
+    initialValue: state.preset,
+    options: Config.presents.map((preset) => ({
+      text: preset.name,
+      value: preset.id,
+    })),
+    onChange: async (value) => {
+      const defaultOverrides = Config.overridesMap.get("default");
+      const overrides = Config.overridesMap.get(value);
+      if (!overrides || !defaultOverrides) return;
+
+      State.override(state, { ...defaultOverrides, ...overrides });
+
+      atomRadiusInput.reset(state.atomScale);
+      relativeAtomScaleInput.reset(state.relativeAtomScale);
+      atomShadeInput.reset(state.atomShade);
+      bondsInput.reset(state.bonds);
+      cellInput.reset(state.cell);
+      bondScaleInput.reset(state.bondScale);
+      bondThresholdInput.reset(state.bondThreshold);
+      bondShadeInput.reset(state.bondShade);
+      aoInput.reset(state.ao);
+      brightnessInput.reset(state.brightness);
+      aoResScaleInput.reset(state.aoResScale);
+      spfInput.reset(state.spf);
+      dofStrengthInput.reset(state.dofStrength);
+      dofPositionInput.reset(state.dofPosition);
+      outlineInput.reset(state.outline);
+      fxaaInput.reset(state.fxaa);
+      resolutionScaleInput.reset(state.resolutionScale);
+      thetaInput.reset(state.cameraTheta);
+      phiInput.reset(state.cameraPhi);
+
+      renderer.setResolution(state);
+      renderer.setStructure(renderer.structure, state);
+      onReset();
+    },
+  });
+
+  const atomRadiusInput = addPercentInput(renderFolder, {
+    label: "Atom radius",
+    hotKey: "a",
+    initialValue: state.atomScale,
+    onChange: (value) => {
+      state.atomScale = value;
+      onReset();
+    },
+  });
+
+  const relativeAtomScaleInput = addPercentInput(renderFolder, {
+    label: "Relative atom radius",
+    hotKey: "z",
+    initialValue: state.relativeAtomScale,
+    onChange: (value) => {
+      state.relativeAtomScale = value;
+      onReset();
+    },
+  });
+
+  const atomShadeInput = addPercentInput(renderFolder, {
+    label: "Atom shade",
+    hotKey: "w",
+    initialValue: state.atomShade,
+    onChange: (value) => {
+      state.atomShade = value;
+      onReset();
+    },
+  });
+
+  renderFolder.addBlade({ view: "separator" });
+
+  const bondsInput = addInput(renderFolder, {
+    label: "Bonds",
+    initialValue: state.bonds,
+    onChange: (value) => {
+      state.bonds = value;
+      if (renderer.structure) renderer.setStructure(renderer.structure, state);
+      onReset();
+    },
+  });
+
+  const cellInput = addInput(renderFolder, {
+    label: "Unit cell",
+    initialValue: state.cell,
+    onChange: (value) => {
+      state.cell = value;
+      if (renderer.structure) renderer.setStructure(renderer.structure, state);
+      onReset();
+    },
+  });
+
+  const bondScaleInput = addPercentInput(renderFolder, {
+    label: "Bond radius",
+    hotKey: "b",
+    initialValue: state.bondScale,
+    onChange: (value) => {
+      state.bondScale = value;
+      onReset();
+    },
+  });
+
+  const bondThresholdInput = addInput(renderFolder, {
+    label: "Bond threshold",
+    initialValue: state.bondThreshold,
+    min: 0,
+    max: 2.5,
+    step: 0.1,
+    onChange: (value) => {
+      state.bondThreshold = value;
+      if (renderer.structure) renderer.setStructure(renderer.structure, state);
+      onReset();
+    },
+  });
+
+  const bondShadeInput = addPercentInput(renderFolder, {
+    label: "Bond shade",
+    hotKey: "s",
+    initialValue: state.bondShade,
+    onChange: (value) => {
+      state.bondShade = value;
+      onReset();
+    },
+  });
+
+  renderFolder.addBlade({ view: "separator" });
+
+  const aoInput = addPercentInput(renderFolder, {
+    label: "Ambient occlusion",
+    hotKey: "a",
+    initialValue: state.ao,
+    onChange: (value) => {
+      state.ao = value;
+    },
+  });
+
+  const brightnessInput = addPercentInput(renderFolder, {
+    label: "Brightness",
+    hotKey: "l",
+    initialValue: state.brightness,
+    onChange: (value) => {
+      state.brightness = value;
+    },
+  });
+
+  const aoResScaleInput = addInput(renderFolder, {
+    label: "AO resolution scale",
+    initialValue: 1,
+    options: [
+      { text: "x1/8", value: 1 / 8 },
+      { text: "x1/4", value: 1 / 4 },
+      { text: "x1/2", value: 1 / 4 },
+      { text: "No scale", value: 1 },
+      { text: "x2", value: 2 },
+      { text: "x4", value: 4 },
+      { text: "x8", value: 8 },
+    ],
+    onChange: (value) => {
+      state.aoResScale = value;
+
+      renderer.setResolution(state);
+      onReset();
+    },
+  });
+
+  const spfInput = addInput(renderFolder, {
+    label: "SPF",
+    initialValue: 32,
+    options: [
+      { text: "0", value: 0 },
+      { text: "1", value: 1 },
+      { text: "2", value: 2 },
+      { text: "4", value: 4 },
+      { text: "8", value: 8 },
+      { text: "16", value: 16 },
+      { text: "32", value: 32 },
+      { text: "64", value: 64 },
+      { text: "128", value: 128 },
+      { text: "256", value: 256 },
+    ],
+    onChange: (value) => {
+      state.spf = value;
+    },
+  });
+
+  renderFolder.addBlade({ view: "separator" });
+
+  const dofStrengthInput = addPercentInput(renderFolder, {
+    label: "Depth of field strength",
+    hotKey: "d",
+    initialValue: state.dofStrength,
+    onChange: (value) => {
+      state.dofStrength = value;
+    },
+  });
+
+  const dofPositionInput = addPercentInput(renderFolder, {
+    label: "Depth of field position",
+    hotKey: "p",
+    initialValue: state.dofPosition,
+    onChange: (value) => {
+      state.dofPosition = value;
+    },
+  });
+
+  renderFolder.addBlade({ view: "separator" });
+
+  const outlineInput = addPercentInput(renderFolder, {
+    label: "Outline strength",
+    hotKey: "q",
+    initialValue: state.outline,
+    onChange: (value) => {
+      state.outline = value;
+    },
+  });
+
+  const fxaaInput = addInput(renderFolder, {
+    label: "Antialiasing passes",
+    initialValue: state.fxaa,
+    min: 0,
+    max: 32,
+    step: 1,
+    onChange: (value) => {
+      state.fxaa = value;
+    },
+  });
+
+  const resolutionScaleInput = addInput(renderFolder, {
+    label: "Resolution scale",
+    initialValue: 1,
+    options: [
+      { text: "x1/8", value: 1 / 8 },
+      { text: "x1/4", value: 1 / 4 },
+      { text: "x1/2", value: 1 / 4 },
+      { text: "No scale", value: 1 },
+      { text: "x2", value: 2 },
+      { text: "x4", value: 4 },
+      { text: "x8", value: 8 },
+    ],
+    onChange: (value) => {
+      state.resolutionScale = value;
+
+      renderer.setResolution(state);
+      onReset();
+    },
+  });
+
+  renderFolder.addBlade({ view: "separator" });
+
+  const thetaInput = addInput(renderFolder, {
+    label: "Theta",
+    initialValue: state.cameraTheta,
+    min: -180,
+    max: 180,
+    step: 1,
+    onChange: (value) => {
+      State.setCameraAngles(state, value, state.cameraPhi);
+      onReset();
+    },
+  });
+
+  const phiInput = addInput(renderFolder, {
+    label: "Phi",
+    initialValue: state.cameraPhi,
+    min: -90,
+    max: 90,
+    step: 1,
+    onChange: (value) => {
+      State.setCameraAngles(state, state.cameraTheta, value);
+      onReset();
+    },
+  });
+
+  renderFolder.addBlade({ view: "separator" });
+
+  renderFolder.addButton({ title: "Center" }).on("click", () => {
+    if (renderer.structure) State.center(state, renderer.structure);
+    onReset();
+  });
+}

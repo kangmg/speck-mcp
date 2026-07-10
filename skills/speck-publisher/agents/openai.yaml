@@ -1,0 +1,13 @@
+interface:
+  display_name: "Speck Publisher"
+  short_description: "Paper-ready atomistic structure figures"
+  brand_color: "#2563EB"
+  default_prompt: "Use $speck-publisher to render a publication-quality SVG from this structure with the unit cell visible."
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "speck-mcp"
+      description: "Local MCP server exposing structure summary, interactive viewer, and SVG/PNG render tools."
+      transport: "stdio"
+policy:
+  allow_implicit_invocation: true

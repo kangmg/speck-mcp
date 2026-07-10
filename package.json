@@ -1,0 +1,38 @@
+{
+  "name": "speck-mcp",
+  "version": "0.1.0",
+  "description": "MCP tools and Codex skill for publication-quality atomistic structure rendering.",
+  "type": "module",
+  "bin": {
+    "speck-mcp": "./dist/src/server.js",
+    "speck-render": "./dist/src/cli.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "build:viewer": "vite build --config viewer/vite.config.ts",
+    "check": "tsc --noEmit -p tsconfig.json",
+    "check:viewer": "tsc -p viewer/tsconfig.json --noEmit",
+    "lint": "biome check .",
+    "test": "tsc -p tsconfig.json && node --test \"dist/test/**/*.test.js\"",
+    "viewer:dev": "vite --config viewer/vite.config.ts",
+    "manual:sample": "node dist/src/cli.js render --input examples/water.extxyz --output .tmp/water.png --width 900 --height 700 --theta 35 --phi 25 --cell"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@pangenerator/tweakpane-textarea-plugin": "^2.0.0",
+    "ase-ts": "^0.1.6",
+    "gl-matrix": "^3.4.4",
+    "lz-string": "^1.5.0",
+    "picogl": "^0.17.9",
+    "playwright": "^1.61.1",
+    "tweakpane": "^4.0.5",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.3",
+    "@tweakpane/core": "^2.0.5",
+    "@types/node": "^24.10.1",
+    "typescript": "^7.0.2",
+    "vite": "^7.2.4"
+  }
+}
