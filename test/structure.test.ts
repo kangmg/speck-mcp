@@ -23,6 +23,18 @@ Direct
 0.250000 0.250000 0.250000
 `
 
+const nearestPtExtxyz = `2
+Lattice="8.0 0.0 0.0 0.0 8.0 0.0 0.0 0.0 8.0" Properties=species:S:1:pos:R:3 pbc="T T T"
+Pt 0.000000 0.000000 0.000000
+Pt 2.850000 0.000000 0.000000
+`
+
+const stretchedPtExtxyz = `2
+Lattice="8.0 0.0 0.0 0.0 8.0 0.0 0.0 0.0 8.0" Properties=species:S:1:pos:R:3 pbc="T T T"
+Pt 0.000000 0.000000 0.000000
+Pt 2.950000 0.000000 0.000000
+`
+
 test("Given extxyz with lattice When parsed Then atoms, bonds, and cell are available", () => {
   const structure = parseStructure({
     source: waterExtxyz,
@@ -36,6 +48,28 @@ test("Given extxyz with lattice When parsed Then atoms, bonds, and cell are avai
   assert.equal(structure.bonds.length, 2)
   assert.notEqual(structure.cell, null)
   assert.deepEqual(structure.pbc, [true, true, true])
+})
+
+test("Given nearest metal neighbors When parsed Then first-neighbor bonds are retained", () => {
+  const structure = parseStructure({
+    source: nearestPtExtxyz,
+    sourceKind: "text",
+    format: "extxyz",
+    name: "nearest-pt",
+  })
+
+  assert.equal(structure.bonds.length, 1)
+})
+
+test("Given stretched metal neighbors When parsed Then loose second-neighbor bonds are rejected", () => {
+  const structure = parseStructure({
+    source: stretchedPtExtxyz,
+    sourceKind: "text",
+    format: "extxyz",
+    name: "stretched-pt",
+  })
+
+  assert.equal(structure.bonds.length, 0)
 })
 
 test("Given POSCAR text When parsed through ase-ts Then direct coordinates and cell are preserved", () => {

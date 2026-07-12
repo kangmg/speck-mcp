@@ -4,7 +4,7 @@ export const overridesMap = new Map<string, Partial<State>>([
   [
     "default",
     {
-      atomScale: 0.6,
+      atomScale: 0.5,
       relativeAtomScale: 1.0,
       bondScale: 0.5,
       ao: 0.75,
@@ -14,7 +14,7 @@ export const overridesMap = new Map<string, Partial<State>>([
       spf: 32,
       bonds: false,
       cell: true,
-      bondThreshold: 1.2,
+      bondThreshold: 1.05,
       bondShade: 0.5,
       atomShade: 0.5,
       dofStrength: 0.0,
@@ -31,7 +31,7 @@ export const overridesMap = new Map<string, Partial<State>>([
       bondScale: 0.5,
       bonds: true,
       cell: true,
-      bondThreshold: 1.2,
+      bondThreshold: 1.05,
     },
   ],
 
@@ -43,7 +43,7 @@ export const overridesMap = new Map<string, Partial<State>>([
       bondScale: 1,
       bonds: true,
       cell: true,
-      bondThreshold: 1.2,
+      bondThreshold: 1.05,
     },
   ],
 

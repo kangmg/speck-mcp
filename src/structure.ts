@@ -17,6 +17,8 @@ type AseReadOptions = {
   readonly format?: string
 }
 
+const bondCutoffRatio = 1.05
+
 export function parseStructure(input: StructureInput): StructureModel {
   const atoms = readFirstAtoms(input)
   const positions = atoms.getPositions(false)
@@ -84,7 +86,7 @@ function inferBonds(atoms: readonly AtomModel[]): readonly BondModel[] {
       if (right.index <= left.index) {
         continue
       }
-      const cutoff = 1.25 * (left.radius + right.radius)
+      const cutoff = bondCutoffRatio * (left.radius + right.radius)
       const length = distance(left.position, right.position)
       if (length > 0.1 && length <= cutoff) {
         bonds.push({ from: left.index, to: right.index, order: 1 })

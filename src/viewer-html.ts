@@ -6,12 +6,14 @@ import type { FigureOptionPatch, StructureInput } from "./types.js"
 export async function createViewerHtml(
   input: StructureInput,
   options: FigureOptionPatch,
+  exportMode = false,
 ): Promise<string> {
   const source = input.sourceKind === "path" ? await readFile(input.source, "utf8") : input.source
   const payload = {
     source,
     format: input.format ?? "auto",
     view: options.view ?? "top",
+    exportMode,
     state: modernStatePatch(options),
   }
   const hash = lz.compressToEncodedURIComponent(JSON.stringify(payload))
@@ -46,11 +48,12 @@ function modernStatePatch(options: FigureOptionPatch): Record<string, unknown> {
     zoom: camera.zoom ? 0.125 * camera.zoom : 0.125,
     bonds: options.showBonds ?? true,
     cell: options.showCell ?? true,
-    atomScale: 0.6 * (options.atomScale ?? 1),
+    atomScale: 0.5 * (options.atomScale ?? 1),
     bondScale: 0.5 * (options.bondScale ?? 1),
+    bondThreshold: 1.05,
     resolutionScale: 1,
-    spf: 128,
-    fxaa: 2,
+    spf: 32,
+    fxaa: 1,
   }
 }
 

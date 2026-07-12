@@ -12,6 +12,12 @@ import "./style.css";
 import type { Structure } from "./types";
 import { mat4 } from "gl-matrix";
 
+declare global {
+  interface Window {
+    __speckExportReady?: boolean;
+  }
+}
+
 const canvas = document.getElementById("renderer-canvas") as HTMLCanvasElement;
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
@@ -21,11 +27,13 @@ const renderContainer = document.getElementById("render-container")!;
 let state = State.create();
 
 let initialCustom: Structure | undefined;
+let exportMode = false;
 const hash = location.hash.slice(1, location.hash.length);
 
 if (hash) {
   try {
     const data = JSON.parse(lz.decompressFromEncodedURIComponent(hash));
+    exportMode = data.exportMode === true;
     if (data.source) {
       initialCustom = Data.Structures.createFromText(
         data.source,
@@ -64,6 +72,12 @@ if (initialCustom) {
   renderer.setStructure(initialCustom, state);
 }
 
+if (exportMode) {
+  for (let frame = 0; frame < 6; frame++) {
+    renderer.render(state);
+  }
+  window.__speckExportReady = true;
+} else {
 const pane = addPane();
 addRenderFolder({
   pane,
@@ -101,3 +115,4 @@ function loop() {
 }
 
 loop();
+}

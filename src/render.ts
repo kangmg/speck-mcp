@@ -44,7 +44,7 @@ export async function renderStructureImage(request: RenderRequest): Promise<Rend
 async function renderModernSpeckPng(request: RenderRequest, outputPath: string): Promise<void> {
   const htmlPath = path.resolve(".tmp", "modern-speck-render.html")
   await mkdir(path.dirname(htmlPath), { recursive: true })
-  await writeFile(htmlPath, await createViewerHtml(request, request.options), "utf8")
+  await writeFile(htmlPath, await createViewerHtml(request, request.options, true), "utf8")
   await captureCanvas({
     url: pathToFileURL(htmlPath).href,
     outputPath,
@@ -61,16 +61,7 @@ async function captureCanvas(options: CaptureOptions): Promise<void> {
   try {
     const page = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: 1 })
     await page.goto(options.url, { waitUntil: "load" })
-    await page.waitForSelector("canvas#renderer-canvas", { state: "attached" })
-    await page.waitForFunction(() => {
-      const canvas = document.querySelector("canvas#renderer-canvas")
-      if (!canvas) {
-        return false
-      }
-      const rect = canvas.getBoundingClientRect()
-      return rect.width > 0 && rect.height > 0
-    })
-    await page.waitForTimeout(3500)
+    await page.waitForFunction(() => Reflect.get(window, "__speckExportReady") === true)
     await page.addStyleTag({
       content:
         "html,body,#render-container{background:transparent!important}#controls-container{display:none!important}",
