@@ -28,6 +28,7 @@ let state = State.create();
 
 let initialCustom: Structure | undefined;
 let exportMode = false;
+const exportSampleTarget = 768;
 const hash = location.hash.slice(1, location.hash.length);
 
 if (hash) {
@@ -73,46 +74,54 @@ if (initialCustom) {
 }
 
 if (exportMode) {
-  for (let frame = 0; frame < 6; frame++) {
+  function exportLoop() {
     renderer.render(state);
+    if (renderer.sampleCount < exportSampleTarget) {
+      requestAnimationFrame(exportLoop);
+      return;
+    }
+    requestAnimationFrame(() => {
+      window.__speckExportReady = true;
+    });
   }
-  window.__speckExportReady = true;
+
+  exportLoop();
 } else {
-const pane = addPane();
-addRenderFolder({
-  pane,
-  renderer,
-  state,
-  onReset,
-});
-addShareFolder({ pane, renderer, state, canvas });
+  const pane = addPane();
+  addRenderFolder({
+    pane,
+    renderer,
+    state,
+    onReset,
+  });
+  addShareFolder({ pane, renderer, state, canvas });
 
-createMouseController({
-  renderer,
-  renderContainer,
-  state,
-  onReset,
-});
+  createMouseController({
+    renderer,
+    renderContainer,
+    state,
+    onReset,
+  });
 
-window.addEventListener("resize", () => {
-  state.windowResolution = {
-    width: window.innerWidth,
-    height: window.innerHeight,
-  };
-  state.aspect = window.innerWidth / window.innerHeight;
-  renderer.setResolution(state);
-  needReset = true;
-});
+  window.addEventListener("resize", () => {
+    state.windowResolution = {
+      width: window.innerWidth,
+      height: window.innerHeight,
+    };
+    state.aspect = window.innerWidth / window.innerHeight;
+    renderer.setResolution(state);
+    needReset = true;
+  });
 
-function loop() {
-  if (needReset) {
-    renderer.reset();
-    needReset = false;
+  function loop() {
+    if (needReset) {
+      renderer.reset();
+      needReset = false;
+    }
+
+    renderer.render(state);
+    requestAnimationFrame(loop);
   }
 
-  renderer.render(state);
-  requestAnimationFrame(loop);
-}
-
-loop();
+  loop();
 }

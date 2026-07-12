@@ -6,7 +6,7 @@ The renderer wraps the `modern-speck` WebGL viewer, adds `ase-ts` structure IO, 
 
 ## Example Output
 
-These examples were generated from RuO2 slabs, Pt/Cu bulk and slabs, and adsorbate slabs with the current defaults: bond threshold `1.05`, compact atom scale, visible unit cells, transparent PNG export, and white background only for this README preview.
+These examples were generated from RuO2 slabs, Pt/Cu bulk and slabs, and adsorbate slabs with the current defaults: bond threshold `1.05`, compact atom scale, visible unit cells, bounded 768-sample PNG export, and white background only for this README preview.
 
 ![RuO2, Pt, Cu slab and adsorbate render examples](docs/images/mesa-examples-cutoff-1p05-small-atoms.png)
 
@@ -54,5 +54,5 @@ node dist/src/cli.js render \
 - Bond inference cutoff: `1.05 * (radiusA + radiusB)`.
 - Viewer bond threshold: `1.05`.
 - Default viewer atom scale: `0.5`.
-- PNG export uses transparent background by default when requested.
-- Export mode renders a bounded frame count and exits, instead of running the interactive viewer loop continuously.
+- PNG export uses transparent background when requested.
+- Export mode accumulates 768 samples for smooth AO/depth, then exits instead of running the interactive viewer loop continuously.
