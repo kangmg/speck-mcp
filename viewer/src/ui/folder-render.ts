@@ -293,4 +293,8 @@ export function addRenderFolder({ pane, state, renderer, onReset }: Params) {
     if (renderer.structure) State.center(state, renderer.structure);
     onReset();
   });
+  return () => {
+    thetaInput.reset(state.cameraTheta);
+    phiInput.reset(state.cameraPhi);
+  };
 }

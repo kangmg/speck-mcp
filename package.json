@@ -15,7 +15,8 @@
     "lint": "biome check .",
     "test": "tsc -p tsconfig.json && node --test \"dist/test/**/*.test.js\"",
     "viewer:dev": "vite --config viewer/vite.config.ts",
-    "manual:sample": "node dist/src/cli.js render --input examples/water.extxyz --output .tmp/water.png --width 900 --height 700 --theta 35 --phi 25 --cell"
+    "manual:sample": "node dist/src/cli.js render --input examples/water.extxyz --output .tmp/water.png --width 900 --height 700 --theta 35 --phi 25 --cell",
+    "test:viewer": "npm run build && npm run build:viewer && node test/viewer-camera.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",

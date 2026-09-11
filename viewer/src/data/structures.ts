@@ -1,3 +1,5 @@
+import { cellViewBasis, projectBasis } from "../../../src/cell-view";
+import type { Mat3, Vec3 } from "../../../src/types";
 import { readAll } from "ase-ts/browser";
 import { Config } from "../config";
 import type { Atom, Bond, Position, Structure } from "../types";
@@ -12,12 +14,6 @@ type AseReadOptions = {
 type CameraView = "top" | "side-a" | "side-b" | "free";
 
 type Cell = [Position, Position, Position];
-
-type CellLengths = {
-  a: number;
-  b: number;
-  c: number;
-};
 
 type ParsedStructure = {
   atoms: Array<Atom>;
@@ -85,89 +81,18 @@ function createCell(frame: ReturnType<typeof readFirstFrame>): Cell | undefined 
 }
 
 function alignToCellView(parsed: ParsedStructure, view: CameraView): ParsedStructure {
-  if (view === "free" || !parsed.cell) {
-    return parsed;
-  }
-
-  const cell = parsed.cell;
-  const volume = dotPosition(cell[0], crossPosition(cell[1], cell[2]));
-  if (Math.abs(volume) < 1e-9) {
-    return parsed;
-  }
-
-  const lengths = {
-    a: length(cell[0]),
-    b: length(cell[1]),
-    c: length(cell[2]),
+  if (view === "free" || !parsed.cell) return parsed;
+  const vector = (p: Position): Vec3 => [p.x, p.y, p.z];
+  const cell: Mat3 = [vector(parsed.cell[0]), vector(parsed.cell[1]), vector(parsed.cell[2])];
+  const basis = cellViewBasis(cell, view);
+  const transform = (p: Position): Position => {
+    const [x, y, z] = projectBasis(vector(p), basis);
+    return {x, y, z};
   };
-
   return {
-    atoms: parsed.atoms.map((atom) => {
-      const fractional = fractionalPosition(atom, cell, volume);
-      const position = positionForView(fractional, lengths, view);
-      return {
-        symbol: atom.symbol,
-        x: position.x,
-        y: position.y,
-        z: position.z,
-      };
-    }),
-    cell: cellForView(lengths, view),
+    atoms: parsed.atoms.map(atom => ({...atom, ...transform(atom)})),
+    cell: [transform(parsed.cell[0]), transform(parsed.cell[1]), transform(parsed.cell[2])],
   };
-}
-
-function fractionalPosition(position: Position, cell: Cell, volume: number): Position {
-  return {
-    x: dotPosition(position, crossPosition(cell[1], cell[2])) / volume,
-    y: dotPosition(position, crossPosition(cell[2], cell[0])) / volume,
-    z: dotPosition(position, crossPosition(cell[0], cell[1])) / volume,
-  };
-}
-
-function positionForView(fractional: Position, lengths: CellLengths, view: CameraView): Position {
-  switch (view) {
-    case "top":
-      return { x: fractional.x * lengths.a, y: fractional.y * lengths.b, z: fractional.z * lengths.c };
-    case "side-a":
-      return { x: fractional.y * lengths.b, y: fractional.z * lengths.c, z: fractional.x * lengths.a };
-    case "side-b":
-      return { x: fractional.x * lengths.a, y: fractional.z * lengths.c, z: fractional.y * lengths.b };
-    case "free":
-      return fractional;
-    default:
-      return assertNever(view);
-  }
-}
-
-function cellForView(lengths: CellLengths, view: CameraView): Cell {
-  switch (view) {
-    case "top":
-      return [
-        { x: lengths.a, y: 0, z: 0 },
-        { x: 0, y: lengths.b, z: 0 },
-        { x: 0, y: 0, z: lengths.c },
-      ];
-    case "side-a":
-      return [
-        { x: 0, y: 0, z: lengths.a },
-        { x: lengths.b, y: 0, z: 0 },
-        { x: 0, y: lengths.c, z: 0 },
-      ];
-    case "side-b":
-      return [
-        { x: lengths.a, y: 0, z: 0 },
-        { x: 0, y: 0, z: lengths.b },
-        { x: 0, y: lengths.c, z: 0 },
-      ];
-    case "free":
-      return [
-        { x: lengths.a, y: 0, z: 0 },
-        { x: 0, y: lengths.b, z: 0 },
-        { x: 0, y: 0, z: lengths.c },
-      ];
-    default:
-      return assertNever(view);
-  }
 }
 
 function createCellBonds(cell: Cell, origin: Position): Array<Bond> {
@@ -252,17 +177,7 @@ function addPosition(a: Position, b: Position): Position {
   };
 }
 
-function crossPosition(a: Position, b: Position): Position {
-  return {
-    x: a.y * b.z - a.z * b.y,
-    y: a.z * b.x - a.x * b.z,
-    z: a.x * b.y - a.y * b.x,
-  };
-}
 
-function dotPosition(a: Position, b: Position): number {
-  return a.x * b.x + a.y * b.y + a.z * b.z;
-}
 
 function scalePosition(position: Position, factor: number): Position {
   return {
@@ -276,9 +191,6 @@ function length(position: Position): number {
   return Math.sqrt(position.x * position.x + position.y * position.y + position.z * position.z);
 }
 
-function assertNever(value: never): never {
-  throw new Error(`Unsupported camera view: ${value}`);
-}
 
 export const Structures = {
   createFromText,

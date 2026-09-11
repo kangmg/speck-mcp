@@ -56,3 +56,18 @@ node dist/src/cli.js render \
 - Default viewer atom scale: `0.5`.
 - PNG export uses transparent background when requested.
 - Export mode accumulates 768 samples for smooth AO/depth, then exits instead of running the interactive viewer loop continuously.
+
+## Cell views and camera persistence
+
+Cell presets apply a rigid rotation to atoms and cell vectors, preserving distances,
+angles and handedness for non-orthogonal cells. `top` views from +c with projected
+a horizontal; `side-a` views from +a with projected b horizontal; `side-b` views
+from -b with projected a horizontal (so +c is up for orthogonal cells). `free`
+uses Cartesian coordinates. Axis views and cell-face normals differ for skewed cells.
+SVG and WebGL use the same cell basis and Y-then-X camera rotation convention.
+
+Mouse rotation uses the theta/phi orbit shown by the sliders, with pitch limited
+to +/-90 degrees. Share > Copy URL preserves the full rotation, zoom and pan on
+reload. Legacy saved rotation matrices take precedence over stale angle fields;
+starting a new drag uses the current theta/phi orbit. A saved URL is tied to the
+viewer HTML location and does not publish that local file.

@@ -10,7 +10,7 @@ import { addShareFolder } from "./ui/folder-share";
 
 import "./style.css";
 import type { Structure } from "./types";
-import { mat4 } from "gl-matrix";
+import { restoreCamera } from "../../src/camera";
 
 declare global {
   interface Window {
@@ -28,6 +28,8 @@ let state = State.create();
 
 let initialCustom: Structure | undefined;
 let exportMode = false;
+let requestedZoom = 1;
+let savedFraming: { zoom: number; translation: { x: number; y: number } } | undefined;
 const exportSampleTarget = 768;
 const hash = location.hash.slice(1, location.hash.length);
 
@@ -45,14 +47,16 @@ if (hash) {
       initialCustom = data.structure;
     }
     const hashState = data.state ?? {};
+    if (data.source && Number.isFinite(hashState.zoom)) requestedZoom = hashState.zoom / 0.125;
     state = {
       ...state,
       ...hashState,
-      rotation: mat4.clone(hashState.rotation ?? state.rotation),
+      rotation: restoreCamera(hashState),
       windowResolution: state.windowResolution,
+      aspect: state.aspect,
     };
-    if (hashState.cameraTheta !== undefined || hashState.cameraPhi !== undefined) {
-      State.setCameraAngles(state, state.cameraTheta, state.cameraPhi);
+    if (hashState.translation && Number.isFinite(hashState.zoom)) {
+      savedFraming = {zoom: hashState.zoom, translation: {...hashState.translation}};
     }
   } catch (e) {
     console.error("Could not parse url.");
@@ -70,6 +74,8 @@ function onReset() {
 
 if (initialCustom) {
   State.center(state, initialCustom);
+  if (savedFraming) Object.assign(state, savedFraming);
+  else state.zoom *= requestedZoom;
   renderer.setStructure(initialCustom, state);
 }
 
@@ -88,7 +94,7 @@ if (exportMode) {
   exportLoop();
 } else {
   const pane = addPane();
-  addRenderFolder({
+  const refreshCamera = addRenderFolder({
     pane,
     renderer,
     state,
@@ -100,7 +106,7 @@ if (exportMode) {
     renderer,
     renderContainer,
     state,
-    onReset,
+    onReset: () => { refreshCamera(); onReset(); },
   });
 
   window.addEventListener("resize", () => {

@@ -1,3 +1,4 @@
+import { cameraRotation, dragCamera } from "../../../src/camera";
 import { mat4, vec4 } from "gl-matrix";
 import type { Rectangle, Resolution, Structure } from "../types";
 import { Config } from "../config";
@@ -165,19 +166,14 @@ function translate(
 }
 
 function rotate(state: State, dx: number, dy: number) {
-  const m = mat4.create();
-  mat4.rotateY(m, m, dx * 0.005);
-  mat4.rotateX(m, m, dy * 0.005);
-  mat4.multiply(state.rotation, m, state.rotation);
-  resolve(state);
+  const angles = dragCamera(state.cameraTheta, state.cameraPhi, dx, dy);
+  setCameraAngles(state, angles.theta, angles.phi);
 }
 
 function setCameraAngles(state: State, theta: number, phi: number) {
   state.cameraTheta = theta;
   state.cameraPhi = phi;
-  mat4.identity(state.rotation);
-  mat4.rotateY(state.rotation, state.rotation, (theta * Math.PI) / 180);
-  mat4.rotateX(state.rotation, state.rotation, (phi * Math.PI) / 180);
+  state.rotation = cameraRotation(theta, phi);
   resolve(state);
 }
 

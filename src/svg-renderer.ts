@@ -1,3 +1,6 @@
+import { vec3 } from "gl-matrix"
+import { cameraRotation } from "./camera.js"
+import { orientStructure } from "./cell-view.js"
 import type {
   AtomModel,
   Camera,
@@ -55,7 +58,8 @@ export function mergeFigureOptions(options: FigureOptionPatch): FigureOptions {
   }
 }
 
-export function renderSvg(structure: StructureModel, options: FigureOptions): string {
+export function renderSvg(input: StructureModel, options: FigureOptions): string {
+  const structure = orientStructure(input, options.view)
   const center = centerOf(structure.atoms.map((atom) => atom.position))
   const cellCorners = options.showCell && structure.cell ? makeCellCorners(structure.cell) : []
   const scenePoints = [...structure.atoms.map((atom) => atom.position), ...cellCorners]
@@ -105,12 +109,12 @@ function projectPoint(
   fit: number,
   options: FigureOptions,
 ): ProjectedPoint {
-  const theta = degreesToRadians(camera.theta)
-  const phi = degreesToRadians(camera.phi)
-  const yawX = Math.cos(theta) * point[0] + Math.sin(theta) * point[2]
-  const yawZ = -Math.sin(theta) * point[0] + Math.cos(theta) * point[2]
-  const pitchY = Math.cos(phi) * point[1] - Math.sin(phi) * yawZ
-  const depth = Math.sin(phi) * point[1] + Math.cos(phi) * yawZ
+  const rotated = vec3.transformMat4(
+    vec3.create(),
+    [...point],
+    cameraRotation(camera.theta, camera.phi),
+  )
+  const [yawX, pitchY, depth] = Array.from(rotated) as [number, number, number]
   return {
     x: options.width / 2 + yawX * fit,
     y: options.height / 2 - pitchY * fit,
@@ -217,10 +221,6 @@ function cellEdges(cell: readonly [Vec3, Vec3, Vec3]): readonly (readonly [Vec3,
 
 function atomGradientId(atom: AtomModel): string {
   return `atom-${atom.index}`
-}
-
-function degreesToRadians(value: number): number {
-  return (value * Math.PI) / 180
 }
 
 function shade(hex: string, amount: number): string {

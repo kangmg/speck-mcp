@@ -30,9 +30,9 @@ Configure the MCP client to launch that command over stdio.
 1. Parse first with `speck_structure_summary`.
    Confirm the inferred format, formula, atom count, and whether a unit cell is present before rendering.
 2. Choose a cell-basis view before tuning camera angles.
-   Use `view: "top"` to look down `c` with `a` horizontal and `b` vertical, `view: "side-a"` to look down `a` with the `b/c` face visible, and `view: "side-b"` to look down `b` with the `a/c` face visible. Use `view: "free"` only when an oblique Cartesian camera is explicitly requested.
+   Use `view: "top"` to view from +c with projected a horizontal, `view: "side-a"` to view from +a with projected b horizontal, and `view: "side-b"` to view from -b with projected a horizontal. These are rigid, right-handed rotations: oblique cell angles remain oblique. A cell-axis view is not generally perpendicular to the opposite cell face. Use `view: "free"` only when an oblique Cartesian camera is explicitly requested.
 3. Use `speck_viewer_html` when the final composition needs human or agent tuning.
-   Open the generated HTML, adjust theta/phi/zoom, cell, bonds, and transparency, then reuse those values for final export.
+   Open the generated HTML, adjust theta/phi/zoom, cell, bonds, and transparency, then reuse those values for final export. Dragging uses the same theta/phi orbit convention as the sliders (phi is limited to +/-90 degrees). Copy URL preserves the complete view, including pan and zoom; theta/phi alone only reproduce orientation.
 4. Use `speck_render_image` for final assets.
    Prefer SVG for journal/vector workflows and PNG for direct manuscript insertion or previews.
 
@@ -48,7 +48,7 @@ Use these defaults unless the user specifies otherwise:
 - `showCell`: `true` when a cell exists.
 - `showBonds`: `true` for molecules and framework structures; `false` for dense metallic systems if bonds clutter the figure.
 - `transparent`: PNG exports remove the page background for figure-panel composition; standalone HTML uses a white background.
-- `camera`: default to `{ "theta": 0, "phi": 0, "zoom": 1 }` with `view: "top"` for an axis-aligned cell view where rear cell edges are hidden by front edges. Only change theta/phi when the user asks for an angled view or `view: "free"`.
+- `camera`: default to `{ "theta": 0, "phi": 0, "zoom": 1 }` with `view: "top"` for a cell-axis view; projected edges need not overlap for non-orthogonal cells. Only change theta/phi when the user asks for an angled view or `view: "free"`.
 
 ## Format Guidance
 
